@@ -103,7 +103,7 @@ void cores(){
         for (int i2 = 0; i2 < coresDisponivel.Length; i2++){
             if (orderMemory[i] == coresDisponivel[i2]){
                 Console.ForegroundColor = colorColored[i2];
-                Console.WriteLine("██████\n██████\n██████");
+                Console.WriteLine("╔══════╗\n║██████║\n║██████║\n║██████║\n╚══════╝");
                 Console.Beep(1000*(i2+1),cd);
             }
         }
