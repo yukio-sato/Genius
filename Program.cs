@@ -1,60 +1,112 @@
-﻿using System.Collections;
-using System.ComponentModel;
-#pragma warning disable CA1416 // beep warning disabler
+﻿//#pragma warning disable CA1416 // beep warning disabler
 
-Console.Clear();
+using System.Dynamic;
 
-string resposta = "";
+Console.Clear(); // clear console
 
-int dificult = 0,
-rodadas = 0,
-etapa = 0,
-limite = 8,
-cd = 500;
+string dificultName = ""; // selected dificult name
 
-bool gameOver = false;
+ConsoleColor dificultColor = ConsoleColor.White; // selected dificult color
 
-string[] cachorroTabela = [];
-string[] coresDisponivel = {"r","g","b","y"};
+int dificult = 0, // dificult number
+rodadas = 0, // total of rounds done
+etapa = 0, // where you are in order
+limite = 8, // limit to loop the game
+cd = 500, // cooldown for sounds
+antiCd = 1; // multiplier to make cd to 0 if needed
 
-Console.WriteLine("Bem vindo ao Genius!!!\nEscolha uma dificuldade entre 1 á 4: ");
-resposta = Console.ReadLine()!;
+bool gameOver = false; // condition to make you LOOSE!
+
+string[] orderMemory = []; // bot memory order!
+string[] coresDisponivel = ["r","g","b","y"]; // color enabled
+
+
+dificulting(); // start question dificult
+void dificulting(){
+    Console.Clear(); // clear console
+    Console.ForegroundColor = ConsoleColor.White;
+    Console.WriteLine("Bem vindo ao Genius!!!"); // just a welcome phrase
+    Console.WriteLine("Escolha uma dificuldade: ");
+    for (int i = 1; i <= 4; i++){ // show all enabled dificults
+        dificult = i;
+        dificultSelect();
+        Console.ForegroundColor = dificultColor; // set text color to dificult showed color
+        Console.WriteLine($"[{i}] {dificultName}"); // show dificult number and name
+    }
+    Console.ForegroundColor = ConsoleColor.White;
+    ConsoleKeyInfo tecla = Console.ReadKey(); // get you keybind pressed
+    Console.WriteLine(); // design
+    string resposta = tecla.KeyChar.ToString().ToLower().Trim(); // remove spaces, make it lower and transform into string
+    if (int.TryParse(resposta, out dificult)){ // check if possible to convert the string to int
+        dificult = int.Parse(resposta); // convert string to int
+        if (dificult > 0 && dificult <= 4){ // if are in between 1 and 4
+            dificultSelect();
+            Console.WriteLine("Pressione qualquer tecla para continuar. . .");
+            Console.ReadKey(); // nothing just visual
+            loop(); // start the game!
+        }
+        else{
+        dificulting(); // start question dificult
+        }
+    }
+    else{
+    dificulting(); // start question dificult
+    }
+}
+
+void dificultSelect(){
+    switch (dificult){ // dificult set
+        case 1: // easy
+            limite = 8;
+            dificultName = "Fácil";
+            dificultColor = ConsoleColor.Green;
+        break;
+        case 2: // medium
+            limite = 14;
+            dificultName = "Médio";
+            dificultColor = ConsoleColor.Yellow;
+        break;
+        case 3: // hard
+            limite = 20;
+            dificultName = "Díficil";
+            dificultColor = ConsoleColor.Red;
+        break;
+        default: // nightmare
+            limite = 31;
+            dificultName = "Pesadelo";
+            dificultColor = ConsoleColor.Magenta;
+        break;
+    }
+}
 
 void cores(){
     Console.ForegroundColor = ConsoleColor.White;
-    int dice = new Random().Next(1,5)-1;
+    int dice = new Random().Next(1,5)-1; // randomize the color with number
 
-    if (cachorroTabela.Length > 0){
-        int total = cachorroTabela.Length;
-        Console.WriteLine(cachorroTabela);
-        Console.WriteLine(total);
-        cachorroTabela = cachorroTabela.Append(coresDisponivel[dice]).ToArray();
-    }
-    else{
-        cachorroTabela = [coresDisponivel[dice]];
-    }
+    int total = orderMemory.Length; // total from table "orderMemory"
+    orderMemory = orderMemory.Append(coresDisponivel[dice]).ToArray(); // push a new value (in this case the random color)
 
-    for (int i = 0; i < cachorroTabela.Length; i++){
-        Console.Clear();
-        if (cachorroTabela[i] == "r"){
+    for (int i = 0; i < orderMemory.Length; i++){
+        Console.Clear(); // avoid color history showed
+        if (orderMemory[i] == "r"){
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("∎");
             Console.Beep(1000,cd);
 
         }
-        else if (cachorroTabela[i] == "g"){
+        else if (orderMemory[i] == "g"){
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("∎");
             Console.Beep(2000,cd);
 
         }
-        else if (cachorroTabela[i] == "b"){
+        else if (orderMemory[i] == "b"){
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("∎");
             Console.Beep(3000,cd);
 
         }
-        else if (cachorroTabela[i] == "y"){
+        else if (orderMemory[i] == "y"){
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("∎");
             Console.Beep(4000,cd);
@@ -64,99 +116,87 @@ void cores(){
 }
 
 void memory(){
-    ConsoleKeyInfo tecla = Console.ReadKey();
-    string teclaPressionada = tecla.KeyChar.ToString().ToLower().Trim();
-
-    if (teclaPressionada == cachorroTabela[etapa]){
-        etapa++;
-        if (etapa < cachorroTabela.Length){
-            memory();
+    ConsoleKeyInfo tecla = Console.ReadKey(); // get you keybind pressed
+    string teclaPressionada = tecla.KeyChar.ToString().ToLower().Trim(); // remove spaces, make it lower and transform into string
+    if (dificult > 1){
+        antiCd = 0; // dont play animation for colors and sounds
+        status(); // start the function "status"
+    }
+    bool inRules = false; // value to see if you are in rule
+    for (int i = 0; i < coresDisponivel.Length; i++){
+        if (coresDisponivel[i] == teclaPressionada){ // check if you pressed one of the colors
+            inRules = true; // you are in rules
         }
     }
-    else if (teclaPressionada == "r"
-    || teclaPressionada == "g"
-    || teclaPressionada == "b"
-    || teclaPressionada == "y"
-    || tecla.Key == ConsoleKey.Escape){
-        gameOver = true;
+
+    if (teclaPressionada == orderMemory[etapa]){ // if pressed correctly
+        etapa++; // increase you step in order
+        if (etapa < orderMemory.Length){ // check if you has colors
+            memory(); // start again with a new color
+        }
+    }
+    else if (inRules == true || tecla.Key == ConsoleKey.Escape){ // if you pressed wrong color or used "ESC" to leave
+        gameOver = true; // You LOOSE!
     }
     else{
-        memory();
+        antiCd = 0; // dont play animation for colors and sounds
+        status(); // start the function "status"
+        memory(); // start again with a new color
     }
+}
+
+void status(){
+    Console.Clear(); // clear the console to avoid color history
+    Console.ResetColor(); // remove color
+    Console.Write($"Rodada atual: ");
+    Console.ForegroundColor = ConsoleColor.Black;
+    Console.BackgroundColor = ConsoleColor.White;
+    Console.WriteLine("["+rodadas+"]"); // show the rounds that you are
+
+    Console.ResetColor(); // remove color
+    Console.WriteLine("As cores e seus respectivos sons: ");
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine($"[{coresDisponivel[0].ToUpper()}] para Vermelho");
+    if (antiCd > 0){Console.Beep(1000,cd/2);}
+    Console.ForegroundColor = ConsoleColor.Blue;
+    Console.WriteLine($"[{coresDisponivel[1].ToUpper()}] para Azul");
+    if (antiCd > 0){Console.Beep(2000,cd/2);}
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine($"[{coresDisponivel[2].ToUpper()}] para Verde");
+    if (antiCd > 0){Console.Beep(3000,cd/2);}
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"[{coresDisponivel[3].ToUpper()}] para Amarelo");
+    if (antiCd > 0){Console.Beep(4000,cd/2);}
+    Console.ForegroundColor = ConsoleColor.White;
+    Console.WriteLine("Digite a sequência demonstrada: "); // ask for you type the sequence showed
+    antiCd = 1; // back to normal
 }
 
 void loop(){
-    rodadas++;
+    rodadas++; // increase your rounds done
     
-    cores();
+    cores(); // show colers partterns
 
-    Console.Clear();
-    Console.ResetColor();
-    Console.Write($"Rodada: ");
-    Console.ForegroundColor = ConsoleColor.Gray;
-    Console.BackgroundColor = ConsoleColor.White;
-    Console.WriteLine(rodadas);
+    status(); // show the round that you are, color
 
-    Console.ResetColor();
-    Console.WriteLine("As cores e seus respectivos sons: ");
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("[R] para Vermelho");
-    Console.Beep(1000,cd/2);
-    Console.ForegroundColor = ConsoleColor.Blue;
-    Console.WriteLine("[B] para Azul");
-    Console.Beep(2000,cd/2);
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine("[G] para Verde");
-    Console.Beep(3000,cd/2);
-    Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine("[Y] para Amarelo");
-    Console.Beep(4000,cd/2);
-    Console.ForegroundColor = ConsoleColor.White;
-    Console.WriteLine("Digite a sequência demonstrada: ");
+    etapa = 0; // the step that you are in order color
+    memory(); // start to "memory" function
 
-    etapa = 0;
-    memory();
-
-    if (gameOver == true){
+    if (gameOver == true){ // when finished "memory" see if you LOOSE!
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("\nGame Over");
+        Console.WriteLine("\nGame Over"); // you LOOSE!
     }
-    else if (rodadas < limite){
-        loop();
+    else if (rodadas < limite){ // if you didnt finished the limit, start from zero
+        loop(); // "loop" function :)
     }
     else{
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("\nParabéns mané");
+        Console.Write("\nParabéns, você completou no modo: [");
+        Console.ForegroundColor = dificultColor; // color of dificult selected
+        Console.Write(dificultName); // the dificult that you selected
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("]!");
     }
 }
 
-if (int.TryParse(resposta, out dificult)){
-    dificult = int.Parse(resposta);
-    if (dificult > 0 && dificult <= 4){
-        switch (dificult)
-        {
-            case 1:
-                limite = 8;
-            break;
-            case 2:
-                limite = 14;
-            break;
-            case 3:
-                limite = 20;
-            break;
-            default:
-                limite = 31;
-            break;
-        }
-        Console.WriteLine("Parabens por saber escrever um numero :D\nPressione qualquer tecla para continuar!");
-        Console.ReadKey();
-        loop();
-    }
-    else{
-        Console.WriteLine("tu sabe que é 1 até 4 certo?");
-    }
-}
-else{
-    Console.WriteLine("Cade a poura do numero >:(((((");
-}
-Console.ResetColor();
+Console.ResetColor(); // set color to original before starting this program.
