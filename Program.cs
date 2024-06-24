@@ -1,4 +1,4 @@
-﻿//#pragma warning disable CA1416 // beep warning disabler
+﻿#pragma warning disable CA1416 // beep warning disabler
 
 using System.Dynamic;
 
@@ -19,7 +19,19 @@ bool gameOver = false; // condition to make you LOOSE!
 
 string[] orderMemory = []; // bot memory order!
 string[] coresDisponivel = ["r","g","b","y"]; // color enabled
+string[] colorName = [
+    "Vermelho",
+    "Verde",
+    "Azul",
+    "Amarelo"
+    ]; // color enabled
 
+ConsoleColor[] colorColored = [
+    ConsoleColor.Red,
+    ConsoleColor.Green,
+    ConsoleColor.Blue,
+    ConsoleColor.Yellow
+    ]; // color enabled
 
 dificulting(); // start question dificult
 void dificulting(){
@@ -88,29 +100,12 @@ void cores(){
 
     for (int i = 0; i < orderMemory.Length; i++){
         Console.Clear(); // avoid color history showed
-        if (orderMemory[i] == "r"){
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("∎");
-            Console.Beep(1000,cd);
-
-        }
-        else if (orderMemory[i] == "g"){
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("∎");
-            Console.Beep(2000,cd);
-
-        }
-        else if (orderMemory[i] == "b"){
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("∎");
-            Console.Beep(3000,cd);
-
-        }
-        else if (orderMemory[i] == "y"){
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("∎");
-            Console.Beep(4000,cd);
-
+        for (int i2 = 0; i2 < coresDisponivel.Length; i2++){
+            if (orderMemory[i] == coresDisponivel[i2]){
+                Console.ForegroundColor = colorColored[i2];
+                Console.WriteLine("██████\n██████\n██████");
+                Console.Beep(1000*(i2+1),cd);
+            }
         }
     }
 }
@@ -118,7 +113,11 @@ void cores(){
 void memory(){
     ConsoleKeyInfo tecla = Console.ReadKey(); // get you keybind pressed
     string teclaPressionada = tecla.KeyChar.ToString().ToLower().Trim(); // remove spaces, make it lower and transform into string
-    if (dificult > 1){
+    if (dificult > 2){
+        antiCd = 0; // dont play animation for colors and sounds
+        status(); // start the function "status"
+    }
+    else if (dificult == 2 && etapa >= (orderMemory.Length/2)){
         antiCd = 0; // dont play animation for colors and sounds
         status(); // start the function "status"
     }
@@ -151,22 +150,15 @@ void status(){
     Console.Write($"Rodada atual: ");
     Console.ForegroundColor = ConsoleColor.Black;
     Console.BackgroundColor = ConsoleColor.White;
-    Console.WriteLine("["+rodadas+"]"); // show the rounds that you are
+    Console.WriteLine("「"+rodadas+"」"); // show the rounds that you are
 
     Console.ResetColor(); // remove color
     Console.WriteLine("As cores e seus respectivos sons: ");
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"[{coresDisponivel[0].ToUpper()}] para Vermelho");
-    if (antiCd > 0){Console.Beep(1000,cd/2);}
-    Console.ForegroundColor = ConsoleColor.Blue;
-    Console.WriteLine($"[{coresDisponivel[1].ToUpper()}] para Azul");
-    if (antiCd > 0){Console.Beep(2000,cd/2);}
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine($"[{coresDisponivel[2].ToUpper()}] para Verde");
-    if (antiCd > 0){Console.Beep(3000,cd/2);}
-    Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine($"[{coresDisponivel[3].ToUpper()}] para Amarelo");
-    if (antiCd > 0){Console.Beep(4000,cd/2);}
+    for (int i = 0; i < coresDisponivel.Length; i++){
+        Console.ForegroundColor = colorColored[i];
+        Console.WriteLine($"「{coresDisponivel[i].ToUpper()}」 para {colorName[i]}");
+        if (antiCd > 0){Console.Beep(1000*(i+1),cd/2);}
+    }
     Console.ForegroundColor = ConsoleColor.White;
     Console.WriteLine("Digite a sequência demonstrada: "); // ask for you type the sequence showed
     antiCd = 1; // back to normal
@@ -183,20 +175,25 @@ void loop(){
     memory(); // start to "memory" function
 
     if (gameOver == true){ // when finished "memory" see if you LOOSE!
+        string original = "";
+        for (int i = 0; i < orderMemory.Length; i++){
+            original += orderMemory[i];
+        }
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine($"\nOrdem Correta: {original}"); // you LOOSE!
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("\nGame Over"); // you LOOSE!
+        Console.WriteLine("Game Over"); // you LOOSE!
     }
     else if (rodadas < limite){ // if you didnt finished the limit, start from zero
         loop(); // "loop" function :)
     }
     else{
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.Write("\nParabéns, você completou no modo: [");
+        Console.Write("\nParabéns, você completou no modo: 「");
         Console.ForegroundColor = dificultColor; // color of dificult selected
         Console.Write(dificultName); // the dificult that you selected
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("]!");
+        Console.WriteLine("」!");
     }
 }
-
 Console.ResetColor(); // set color to original before starting this program.
